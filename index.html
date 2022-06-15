@@ -1,0 +1,97 @@
+<body>
+    <canvas id='cvs'></canvas>
+    <script>
+        const cvs = document.getElementById('cvs');
+        const ctx = cvs.getContext('2d');
+
+        cvs.width = 500;
+        cvs.height = 500;
+        cvs.style.border = '1px solid black';
+
+        let grid = [];
+
+        for (let y=0; y<50; y++) {
+            grid.push([]);
+            for (let x=0; x<50; x++) {
+                grid[y].push(10);
+            }
+        }
+
+        class Mountain {
+            constructor(x,y) {
+                this.x = x;
+                this.y = y;
+                this.peak = 30;
+                this.target = 10;
+                this.genedBlocks = [];
+                this.buffer = [];
+                this.justGened = [{x:this.x,y:this.y,h:this.peak}];
+            }
+            generate() {
+                console.log('generate');
+                grid[this.y][this.x] = this.peak;
+                let c = 0;
+                while (!(this.justGened.some(x=>x.h<this.target)) || !(this.genedBlocks.some(x=>x.h<this.target))) {
+                    console.log(++c);
+                    this.buffer = [...this.justGened];
+                    this.justGened = [];
+                    this.buffer.forEach(x=>{
+                        console.log(x);
+                        if (grid[x.y-1]?.[x.x] && !(this.genedBlocks.some(a=>(a.x==x.x&&a.y==x.y-1)))) {
+                            let height = (Math.round(Math.random()*2)+1)
+                            console.log(height);
+                            grid[x.y-1][x.x] = Math.max(x.h-height,(grid[x.y-1][x.x],x.h-height));
+                            this.justGened.push({x:x.x,y:x.y-1,h:x.h-height});
+                            this.genedBlocks.push({x:x.x,y:x.y-1,h:x.h-height});
+                        };
+                        if (grid[x.y+1]?.[x.x] && !(this.genedBlocks.some(a=>(a.x==x.x&&a.y==x.y+1)))) {
+                            let height = (Math.round(Math.random()*2)+1)
+                            console.log(height);
+                            grid[x.y+1][x.x] = Math.max(x.h-height,(grid[x.y+1][x.x],x.h-height));
+                            this.justGened.push({x:x.x,y:x.y+1,h:x.h-height});
+                            this.genedBlocks.push({x:x.x,y:x.y-1,h:x.h-height});
+                        };
+                        if (grid[x.y]?.[x.x-1] && !(this.genedBlocks.some(a=>(a.x==x.x-1&&a.y==x.y)))) {
+                            let height = (Math.round(Math.random()*2)+1)
+                            console.log(height);
+                            grid[x.y][x.x-1] = Math.max(x.h-height,(grid[x.y][x.x-1],x.h-height));
+                            this.justGened.push({x:x.x-1,y:x.y,h:x.h-height});
+                            this.genedBlocks.push({x:x.x,y:x.y-1,h:x.h-height});
+                        };
+                        if (grid[x.y]?.[x.x+1] && !(this.genedBlocks.some(a=>(a.x==x.x+1&&a.y==x.y)))) {
+                            let height = (Math.round(Math.random()*2)+1)
+                            console.log(height);
+                            grid[x.y][x.x+1] = Math.max(x.h-height,(grid[x.y][x.x+1],x.h-height));
+                            this.justGened.push({x:x.x+1,y:x.y,h:x.h-height});
+                            this.genedBlocks.push({x:x.x,y:x.y-1,h:x.h-height});
+                        };
+
+                    })
+                    this.genedBlocks = this.genedBlocks.concat(this.buffer);
+                    this.buffer = [];
+                }
+            }
+        }
+
+        let mountains = [new Mountain(10,10),new Mountain(13,13)];
+        mountains.forEach(x=>{
+            x.generate();
+        })
+
+        let max = -Infinity;
+        grid.forEach(y=>{
+            y.forEach(x=>{
+                if (x > max) {
+                    max = x;
+                }
+            })
+        })
+
+        grid.forEach((y,yi)=>{
+            y.forEach((x,xi)=>{
+                ctx.fillStyle = `hsl(0,0%,${x/max*100}%)`;
+                ctx.fillRect(xi*10,yi*10,10,10);
+            })
+        })
+    </script>
+</body>
